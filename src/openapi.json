@@ -1,0 +1,431 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Rana4 API",
+    "version": "1.0.0",
+    "description": "Scheduling component API: standards, assurance notes, fragnets, activities, relationships, export."
+  },
+  "servers": [{ "url": "/", "description": "Current server" }],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check",
+        "tags": ["Health"],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "status": { "type": "string", "example": "ok" } }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/standards": {
+      "post": {
+        "summary": "Create standard",
+        "tags": ["Standards"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name"],
+                "properties": { "name": { "type": "string" }, "description": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created" },
+          "400": { "description": "name missing" },
+          "500": { "description": "Server error" }
+        }
+      },
+      "get": {
+        "summary": "List all standards",
+        "tags": ["Standards"],
+        "responses": { "200": { "description": "OK" }, "500": { "description": "Server error" } }
+      }
+    },
+    "/standards/{id}": {
+      "get": {
+        "summary": "Get standard by ID",
+        "tags": ["Standards"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "OK" }, "404": { "description": "Not found" }, "500": { "description": "Server error" } }
+      },
+      "put": {
+        "summary": "Update standard",
+        "tags": ["Standards"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "name": { "type": "string" }, "description": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" }, "404": { "description": "Not found" }, "500": { "description": "Server error" } }
+      },
+      "delete": {
+        "summary": "Delete standard",
+        "tags": ["Standards"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "204": { "description": "Deleted" }, "404": { "description": "Not found" }, "500": { "description": "Server error" } }
+      }
+    },
+    "/assurance-notes": {
+      "post": {
+        "summary": "Create assurance note",
+        "tags": ["Assurance notes"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["standardId", "noteText"],
+                "properties": { "standardId": { "type": "string" }, "noteText": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created" },
+          "400": { "description": "noteText missing" },
+          "404": { "description": "Standard not found" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/assurance-notes/standard/{standardId}": {
+      "get": {
+        "summary": "List assurance notes for a standard",
+        "tags": ["Assurance notes"],
+        "parameters": [{ "name": "standardId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "OK" }, "404": { "description": "Standard not found" }, "500": { "description": "Server error" } }
+      }
+    },
+    "/assurance-notes/{id}": {
+      "delete": {
+        "summary": "Delete assurance note",
+        "tags": ["Assurance notes"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "204": { "description": "Deleted" }, "404": { "description": "Not found" }, "500": { "description": "Server error" } }
+      }
+    },
+    "/deliverables": {
+      "post": {
+        "summary": "Create deliverable",
+        "tags": ["Deliverables"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["fragnetId", "name", "bestDuration", "likelyDuration"],
+                "properties": {
+                  "fragnetId": { "type": "string" },
+                  "name": { "type": "string" },
+                  "bestDuration": { "type": "integer", "minimum": 1 },
+                  "likelyDuration": { "type": "integer", "minimum": 1 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created" },
+          "400": { "description": "Invalid input" },
+          "404": { "description": "Fragnet not found" },
+          "500": { "description": "Server error" }
+        }
+      },
+      "get": {
+        "summary": "List all deliverables, optionally filter by fragnetId",
+        "tags": ["Deliverables"],
+        "parameters": [{ "name": "fragnetId", "in": "query", "required": false, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "OK" }, "500": { "description": "Server error" } }
+      }
+    },
+    "/deliverables/fragnet/{fragnetId}": {
+      "get": {
+        "summary": "List deliverables for a fragnet",
+        "tags": ["Deliverables"],
+        "parameters": [{ "name": "fragnetId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "OK" }, "404": { "description": "Fragnet not found" }, "500": { "description": "Server error" } }
+      }
+    },
+    "/deliverables/{id}": {
+      "get": {
+        "summary": "Get deliverable by ID",
+        "tags": ["Deliverables"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "OK" }, "404": { "description": "Not found" }, "500": { "description": "Server error" } }
+      },
+      "put": {
+        "summary": "Update deliverable",
+        "tags": ["Deliverables"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fragnetId": { "type": "string" },
+                  "name": { "type": "string" },
+                  "bestDuration": { "type": "integer", "minimum": 1 },
+                  "likelyDuration": { "type": "integer", "minimum": 1 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "400": { "description": "Invalid durations" },
+          "404": { "description": "Not found" },
+          "500": { "description": "Server error" }
+        }
+      },
+      "delete": {
+        "summary": "Delete deliverable",
+        "tags": ["Deliverables"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "204": { "description": "Deleted" }, "404": { "description": "Not found" }, "500": { "description": "Server error" } }
+      }
+    },
+    "/fragnets": {
+      "post": {
+        "summary": "Create fragnet",
+        "tags": ["Fragnets"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["standardId", "name"],
+                "properties": {
+                  "standardId": { "type": "string" },
+                  "name": { "type": "string" },
+                  "description": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created" },
+          "400": { "description": "name missing" },
+          "404": { "description": "Standard not found" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/fragnets/standard/{standardId}": {
+      "get": {
+        "summary": "List fragnets for a standard",
+        "tags": ["Fragnets"],
+        "parameters": [{ "name": "standardId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "OK" }, "404": { "description": "Standard not found" }, "500": { "description": "Server error" } }
+      }
+    },
+    "/fragnets/{id}": {
+      "get": {
+        "summary": "Get fragnet by ID",
+        "tags": ["Fragnets"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "OK" }, "404": { "description": "Not found" }, "500": { "description": "Server error" } }
+      },
+      "put": {
+        "summary": "Update fragnet",
+        "tags": ["Fragnets"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "name": { "type": "string" }, "description": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "OK" }, "404": { "description": "Not found" }, "500": { "description": "Server error" } }
+      },
+      "delete": {
+        "summary": "Delete fragnet",
+        "tags": ["Fragnets"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "204": { "description": "Deleted" }, "404": { "description": "Not found" }, "500": { "description": "Server error" } }
+      }
+    },
+    "/activities": {
+      "post": {
+        "summary": "Create activity",
+        "tags": ["Activities"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["fragnetId", "activityCode", "name", "bestDuration", "likelyDuration"],
+                "properties": {
+                  "fragnetId": { "type": "string" },
+                  "activityCode": { "type": "string" },
+                  "name": { "type": "string" },
+                  "bestDuration": { "type": "integer", "minimum": 1 },
+                  "likelyDuration": { "type": "integer", "minimum": 1 },
+                  "assuranceNoteId": { "type": "string", "nullable": true }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created" },
+          "400": { "description": "Invalid input or duplicate activityCode" },
+          "404": { "description": "Fragnet not found" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/activities/fragnet/{fragnetId}": {
+      "get": {
+        "summary": "List activities for a fragnet",
+        "tags": ["Activities"],
+        "parameters": [{ "name": "fragnetId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "OK" }, "404": { "description": "Fragnet not found" }, "500": { "description": "Server error" } }
+      }
+    },
+    "/activities/{id}": {
+      "get": {
+        "summary": "Get activity by ID",
+        "tags": ["Activities"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "OK" }, "404": { "description": "Not found" }, "500": { "description": "Server error" } }
+      },
+      "put": {
+        "summary": "Update activity",
+        "tags": ["Activities"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "bestDuration": { "type": "integer", "minimum": 1 },
+                  "likelyDuration": { "type": "integer", "minimum": 1 },
+                  "assuranceNoteId": { "type": "string", "nullable": true }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "OK" },
+          "400": { "description": "Invalid durations" },
+          "404": { "description": "Not found" },
+          "500": { "description": "Server error" }
+        }
+      },
+      "delete": {
+        "summary": "Delete activity",
+        "tags": ["Activities"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "204": { "description": "Deleted" }, "404": { "description": "Not found" }, "500": { "description": "Server error" } }
+      }
+    },
+    "/relationships": {
+      "post": {
+        "summary": "Create relationship",
+        "tags": ["Relationships"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["fragnetId", "predecessorActivityId", "successorActivityId", "relationshipType"],
+                "properties": {
+                  "fragnetId": { "type": "string" },
+                  "predecessorActivityId": { "type": "string" },
+                  "successorActivityId": { "type": "string" },
+                  "relationshipType": { "type": "string", "enum": ["FS", "SS", "FF", "SF"] },
+                  "lag": { "type": "integer", "default": 0 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Created" },
+          "400": { "description": "Invalid input" },
+          "404": { "description": "Fragnet not found" },
+          "500": { "description": "Server error" }
+        }
+      }
+    },
+    "/relationships/fragnet/{fragnetId}": {
+      "get": {
+        "summary": "List relationships for a fragnet",
+        "tags": ["Relationships"],
+        "parameters": [{ "name": "fragnetId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "OK" }, "404": { "description": "Fragnet not found" }, "500": { "description": "Server error" } }
+      }
+    },
+    "/relationships/{id}": {
+      "delete": {
+        "summary": "Delete relationship",
+        "tags": ["Relationships"],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "204": { "description": "Deleted" }, "404": { "description": "Not found" }, "500": { "description": "Server error" } }
+      }
+    },
+    "/export/fragnet/{fragnetId}": {
+      "post": {
+        "summary": "Export fragnet as P6-compatible Excel (.xlsx)",
+        "tags": ["Export"],
+        "parameters": [{ "name": "fragnetId", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["scenario", "projectName", "projectId"],
+                "properties": {
+                  "scenario": { "type": "string", "enum": ["best", "likely"] },
+                  "projectName": { "type": "string" },
+                  "projectId": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Excel file (application/vnd.openxmlformats-officedocument.spreadsheetml.sheet)" },
+          "400": { "description": "scenario, projectName or projectId missing or invalid" },
+          "404": { "description": "Fragnet not found" },
+          "500": { "description": "Server error" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+# Rana4 - Python tooling (scripts, API client, tests)
+# Install: pip install -r requirements.txt
+
+# HTTP client for API calls / scripts
+requests>=2.31.0
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Testing (optional)
+pytest>=7.4.0
+pytest-httpx>=0.27.0
+
+# Code quality (optional)
+black>=24.0.0
+ruff>=0.4.0

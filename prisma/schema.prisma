@@ -1,0 +1,109 @@
+// Prisma schema – Neon PostgreSQL (scheduling system)
+// best_duration and likely_duration: validate > 0 at app level
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique @db.VarChar(255)
+  passwordHash String   @map("password_hash") @db.VarChar(255)
+  name         String?  @db.VarChar(255)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+enum RelationshipType {
+  FS
+  SS
+  FF
+  SF
+}
+
+model Standard {
+  id             String           @id @default(uuid())
+  name           String           @db.VarChar(255)
+  description    String?         @db.Text
+  createdAt      DateTime         @default(now()) @map("created_at")
+  assuranceNotes AssuranceNote[]
+  fragnets       Fragnet[]
+
+  @@map("standards")
+}
+
+model AssuranceNote {
+  id         String    @id @default(uuid())
+  standardId String    @map("standard_id")
+  noteText   String    @map("note_text") @db.Text
+  createdAt  DateTime  @default(now()) @map("created_at")
+  standard   Standard  @relation(fields: [standardId], references: [id], onDelete: Cascade)
+  activities Activity[]
+
+  @@map("assurance_notes")
+}
+
+model Fragnet {
+  id             String       @id @default(uuid())
+  standardId     String       @map("standard_id")
+  name           String       @db.VarChar(255)
+  description    String?      @db.Text
+  createdAt      DateTime     @default(now()) @map("created_at")
+  standard       Standard     @relation(fields: [standardId], references: [id], onDelete: Cascade)
+  activities     Activity[]
+  relationships  Relationship[]
+  deliverables   Deliverable[]
+
+  @@map("fragnets")
+}
+
+model Activity {
+  id                String          @id @default(uuid())
+  fragnetId         String         @map("fragnet_id")
+  activityCode      String         @map("activity_code") @db.VarChar(100)
+  name              String         @db.VarChar(255)
+  bestDuration     Int            @map("best_duration")   // validate > 0 at app level
+  likelyDuration   Int            @map("likely_duration") // validate > 0 at app level
+  assuranceNoteId  String?        @map("assurance_note_id")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  fragnet           Fragnet       @relation(fields: [fragnetId], references: [id], onDelete: Cascade)
+  assuranceNote     AssuranceNote? @relation(fields: [assuranceNoteId], references: [id], onDelete: SetNull)
+  predecessorIn     Relationship[] @relation("Predecessor")
+  successorIn       Relationship[] @relation("Successor")
+
+  @@unique([fragnetId, activityCode])
+  @@map("activities")
+}
+
+model Relationship {
+  id                     String           @id @default(uuid())
+  fragnetId              String           @map("fragnet_id")
+  predecessorActivityId String           @map("predecessor_activity_id")
+  successorActivityId   String           @map("successor_activity_id")
+  relationshipType      RelationshipType @map("relationship_type")
+  lag                    Int             @default(0)
+  fragnet               Fragnet          @relation(fields: [fragnetId], references: [id], onDelete: Cascade)
+  predecessorActivity   Activity         @relation("Predecessor", fields: [predecessorActivityId], references: [id], onDelete: Cascade)
+  successorActivity     Activity         @relation("Successor", fields: [successorActivityId], references: [id], onDelete: Cascade)
+
+  @@map("relationships")
+}
+
+model Deliverable {
+  id             String    @id @default(uuid())
+  name           String    @db.VarChar(255)
+  bestDuration   Int       @map("best_duration")   // validate > 0 at app level
+  likelyDuration Int       @map("likely_duration") // validate > 0 at app level
+  fragnetId      String?   @map("fragnet_id")
+  fragnet        Fragnet?  @relation(fields: [fragnetId], references: [id], onDelete: Cascade)
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@map("deliverables")
+}
