@@ -120,9 +120,17 @@ export async function updateMe(req: AuthRequest, res: Response): Promise<void> {
   }
   try {
     const { name } = req.body as { name?: string };
+    if (name === undefined) {
+      const user = await prisma.user.findUniqueOrThrow({
+        where: { id: req.user.id },
+        select: { id: true, email: true, name: true, createdAt: true },
+      });
+      res.json(toUserResponse(user));
+      return;
+    }
     const user = await prisma.user.update({
       where: { id: req.user.id },
-      data: name !== undefined ? { name: String(name).trim() || null } : undefined,
+      data: { name: String(name).trim() || null },
       select: { id: true, email: true, name: true, createdAt: true },
     });
     res.json(toUserResponse(user));

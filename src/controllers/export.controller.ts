@@ -1,3 +1,4 @@
+import type { Activity, Deliverable, Relationship } from "@prisma/client";
 import type { Request, Response } from "express";
 import { prisma } from "../utils/prisma.js";
 import { generateFragnetXlsx, type ExportScenario } from "../services/export.service.js";
@@ -52,7 +53,7 @@ export async function exportFragnet(req: Request, res: Response): Promise<void> 
       return;
     }
 
-    const deliverablesForExport = fragnet.deliverables.map((d) => ({
+    const deliverablesForExport = fragnet.deliverables.map((d: Deliverable) => ({
       id: d.id,
       name: d.name,
       bestDuration: d.bestDuration,
@@ -66,7 +67,7 @@ export async function exportFragnet(req: Request, res: Response): Promise<void> 
         where: { fragnetId: null, id: { in: unassignedDeliverableIds } },
         orderBy: { createdAt: "asc" },
       });
-      unassignedForExport = unassigned.map((d) => ({
+      unassignedForExport = unassigned.map((d: Deliverable) => ({
         id: d.id,
         name: d.name,
         bestDuration: d.bestDuration,
@@ -77,14 +78,14 @@ export async function exportFragnet(req: Request, res: Response): Promise<void> 
 
     const buffer = generateFragnetXlsx(
       deliverablesForExport,
-      fragnet.activities.map((a) => ({
+      fragnet.activities.map((a: Activity) => ({
         id: a.id,
         name: a.name,
         bestDuration: a.bestDuration,
         likelyDuration: a.likelyDuration,
         createdAt: a.createdAt,
       })),
-      fragnet.relationships.map((r) => ({
+      fragnet.relationships.map((r: Relationship) => ({
         predecessorActivityId: r.predecessorActivityId,
         successorActivityId: r.successorActivityId,
         relationshipType: r.relationshipType,
